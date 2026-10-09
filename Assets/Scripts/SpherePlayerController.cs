@@ -15,6 +15,20 @@ public class SpherePlayerController : MonoBehaviour
     public float MaxSpeed = 5f;
     public float MaxAngularSpeed = 20f;
 
+    [Header("Super Roll")]
+    public Key SuperRollKey = Key.Enter;
+    public float SuperRollImpulse = 20f;
+    public float SuperRollDuration = 1f;
+    public float SuperRollCooldown = 3f;
+    public float MassMultiplier = 2f;
+
+    private Vector3 lastMoveDirection = Vector3.forward;
+    private bool superRollRequested;
+    private bool superRollActive;
+    private float nextSuperRollTime;
+    private float superRollEndTime;
+    private float originalMass;
+
     private Rigidbody body;
     private Vector3 moveDirection;
 
@@ -22,6 +36,7 @@ public class SpherePlayerController : MonoBehaviour
     {
         body = GetComponent<Rigidbody>();
         body.maxAngularVelocity = MaxAngularSpeed;
+        originalMass = body.mass;
     }
 
     void Update()
@@ -41,10 +56,51 @@ public class SpherePlayerController : MonoBehaviour
         if (keyboard[RightKey].isPressed) horizontal += 1f;
 
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (moveDirection != Vector3.zero)
+        {
+            lastMoveDirection = moveDirection;
+        }
+
+        if (keyboard[SuperRollKey].wasPressedThisFrame &&
+            Time.time >= nextSuperRollTime)
+        {
+            superRollRequested = true;
+        }
     }
 
     void FixedUpdate()
     {
+        // Restaure la masse à la fin de la compétence.
+        if (superRollActive && Time.time >= superRollEndTime)
+        {
+            body.mass = originalMass;
+            superRollActive = false;
+        }
+
+        if (superRollRequested)
+        {
+            superRollRequested = false;
+
+            if (Time.time >= nextSuperRollTime)
+            {
+                body.mass = originalMass * MassMultiplier;
+
+                Vector3 rotationAxis =
+                    Vector3.Cross(Vector3.up, lastMoveDirection);
+
+                // Augmentation instantanée de la vitesse de rotation.
+                body.AddTorque(
+                    rotationAxis * SuperRollImpulse,
+                    ForceMode.VelocityChange
+                );
+
+                superRollActive = true;
+                superRollEndTime = Time.time + SuperRollDuration;
+                nextSuperRollTime = Time.time + SuperRollCooldown;
+            }
+        }
+
         if (moveDirection == Vector3.zero)
             return;
 
@@ -62,5 +118,15 @@ public class SpherePlayerController : MonoBehaviour
                 ForceMode.Acceleration
             );
         }
+    }
+    void OnDisable()
+    {
+        if (body != null)
+        {
+            body.mass = originalMass;
+        }
+
+        superRollActive = false;
+        superRollRequested = false;
     }
 }

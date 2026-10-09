@@ -14,6 +14,15 @@ public class CubePlayerController : MonoBehaviour
     public float Acceleration = 30f;
     public float MaxSpeed = 5f;
 
+    [Header("Dash")]
+    public Key DashKey = Key.Space;
+    public float DashImpulse = 8f;
+    public float DashCooldown = 3f;
+
+    private Vector3 lastMoveDirection = Vector3.forward;
+    private bool dashRequested;
+    private float nextDashTime;
+
     private Rigidbody body;
     private Vector3 moveDirection;
 
@@ -40,10 +49,35 @@ public class CubePlayerController : MonoBehaviour
 
         // Évite une accélération plus forte en diagonale.
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (moveDirection != Vector3.zero)
+        {
+            lastMoveDirection = moveDirection;
+        }
+
+        if (keyboard[DashKey].wasPressedThisFrame &&
+            Time.time >= nextDashTime)
+        {
+            dashRequested = true;
+        }
     }
 
     void FixedUpdate()
     {
+        if (dashRequested)
+        {
+            dashRequested = false;
+
+            if (Time.time >= nextDashTime)
+            {
+                body.AddForce(
+                    lastMoveDirection * DashImpulse,
+                    ForceMode.Impulse
+                );
+
+                nextDashTime = Time.time + DashCooldown;
+            }
+        }
         if (moveDirection == Vector3.zero)
             return;
 
