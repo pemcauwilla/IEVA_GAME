@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6957747455119267720}
   - component: {fileID: 714586347938509349}
   - component: {fileID: 4736968646822311691}
+  - component: {fileID: -7748750946262839395}
   m_Layer: 0
   m_Name: PlayerCube
   m_TagString: Untagged
@@ -159,3 +160,19 @@ MonoBehaviour:
   RightKey: 18
   Acceleration: 30
   MaxSpeed: 5
+  DashKey: 1
+  DashImpulse: 8
+  DashCooldown: 3
+--- !u!114 &-7748750946262839395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6594863957593710159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed7ded1d59b9071d29dfc757cac0644f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerIdentity
+  playerTeam: 1

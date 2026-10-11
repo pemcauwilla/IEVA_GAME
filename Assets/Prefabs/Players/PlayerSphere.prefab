@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1123381844380655487}
   - component: {fileID: 6717655929609212465}
   - component: {fileID: 8846493080288699031}
+  - component: {fileID: -6759188332246658718}
   m_Layer: 0
   m_Name: PlayerSphere
   m_TagString: Untagged
@@ -181,3 +182,16 @@ MonoBehaviour:
   BumpImpulse: 6
   MinimumImpactSpeed: 1
   BumpCooldown: 0.5
+--- !u!114 &-6759188332246658718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8013460976562238902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed7ded1d59b9071d29dfc757cac0644f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerIdentity
+  playerTeam: 2
