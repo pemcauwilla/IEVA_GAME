@@ -71,7 +71,7 @@ public class SpherePlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Restaure la masse à la fin de la compétence.
+        // Restaure la masse ï¿½ la fin de la compï¿½tence.
         if (superRollActive && Time.time >= superRollEndTime)
         {
             body.mass = originalMass;
@@ -89,7 +89,7 @@ public class SpherePlayerController : MonoBehaviour
                 Vector3 rotationAxis =
                     Vector3.Cross(Vector3.up, lastMoveDirection);
 
-                // Augmentation instantanée de la vitesse de rotation.
+                // Augmentation instantanï¿½e de la vitesse de rotation.
                 body.AddTorque(
                     rotationAxis * SuperRollImpulse,
                     ForceMode.VelocityChange
