@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7749143200614522338}
   - component: {fileID: 1123381844380655487}
   - component: {fileID: 6717655929609212465}
+  - component: {fileID: 8846493080288699031}
   m_Layer: 0
   m_Name: PlayerSphere
   m_TagString: Untagged
@@ -160,3 +161,23 @@ MonoBehaviour:
   RollAcceleration: 20
   MaxSpeed: 5
   MaxAngularSpeed: 20
+  SuperRollKey: 2
+  SuperRollImpulse: 20
+  SuperRollDuration: 1
+  SuperRollCooldown: 3
+  MassMultiplier: 2
+--- !u!114 &8846493080288699031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8013460976562238902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095316a39a79eaf4a8310bc3e8dcf151, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBump
+  BumpImpulse: 6
+  MinimumImpactSpeed: 1
+  BumpCooldown: 0.5
