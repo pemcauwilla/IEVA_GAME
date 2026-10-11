@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 714586347938509349}
   - component: {fileID: 4736968646822311691}
   - component: {fileID: -7748750946262839395}
+  - component: {fileID: 5846365230637591055}
   m_Layer: 0
   m_Name: PlayerCube
   m_TagString: Untagged
@@ -176,3 +177,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerIdentity
   playerTeam: 1
+--- !u!114 &5846365230637591055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6594863957593710159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfb8f84414147f2dd996db8642d39fa3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSurvival
+  maxCoherence: 100
+  currentCoherence: 100
+  drainRate: 10
+  regenRate: 20
+  isInSafeZone: 0
