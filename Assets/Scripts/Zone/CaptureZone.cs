@@ -14,13 +14,15 @@ public enum ZoneState
 public class CaptureZone : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public float captureDuration = 3f;
-    public float currentProgress = 0f;
+    [SerializeField]
+    private float captureDuration = 3f;
+    [SerializeField]
+    private float currentProgress = 0f;
     
     public PlayerTeam currentOwner = PlayerTeam.None;
-    public ZoneState currentState = ZoneState.Neutral;
+    private ZoneState currentState = ZoneState.Neutral;
 
-    public List<PlayerIdentity> playersInZone = new();
+    private List<PlayerIdentity> playersInZone = new();
     public event System.Action<PlayerTeam> OnZoneCaptured;
 
     public void OnTriggerEnter(Collider other)
@@ -37,42 +39,46 @@ public class CaptureZone : MonoBehaviour
 
     public void Update()
     {
-        if(playersInZone.Count == 0)
+        switch (playersInZone.Count)
         {
-            currentState = currentOwner == PlayerTeam.None ? ZoneState.Neutral : ZoneState.Captured;
+            case 0: HandleEmptyZone(); break;
+            case 1: HandleCapturing(); break;
+            case 2: HandleContesting(); break;
+        }
+    }
+
+    private void HandleEmptyZone()
+    {
+        currentState = currentOwner == PlayerTeam.None ? ZoneState.Neutral : ZoneState.Captured;
+        currentProgress = 0f;
+    }
+
+    private void HandleCapturing()
+    {
+        PlayerTeam zonePlayer = playersInZone[0].playerTeam;
+
+        if(currentOwner == zonePlayer) {
+            currentState = ZoneState.Captured;
             currentProgress = 0f;
             return;
         }
 
-        if(playersInZone.Count == 2)
+        // Nobody has captured it yet or Changing zone ownership
+        currentProgress += Time.deltaTime;
+        currentState = ZoneState.Capturing;
+    
+        if(currentProgress >= captureDuration)
         {
-            currentState = ZoneState.Contested;
-            return;
+            if(zonePlayer != currentOwner) currentOwner = zonePlayer;
+            OnZoneCaptured?.Invoke(currentOwner); 
+            currentState = ZoneState.Captured;
+            currentProgress = 0f;  
         }
+    }
 
-        if(playersInZone.Count == 1)
-        {
-            PlayerTeam zonePlayer = playersInZone[0].playerTeam;
-
-            if(currentOwner == zonePlayer) {
-                currentState = ZoneState.Captured;
-                currentProgress = 0f;
-                return;
-            }
-
-            // Nobody has captured it yet or Changing zone ownership
-            currentProgress += Time.deltaTime;
-            currentState = ZoneState.Capturing;
-        
-            if(currentProgress >= captureDuration)
-            {
-                if(zonePlayer != currentOwner) currentOwner = zonePlayer;
-                OnZoneCaptured?.Invoke(currentOwner); 
-                currentState = ZoneState.Captured;
-                currentProgress = 0f;  
-            }
-        }
-
+    private void HandleContesting()
+    {
+        currentState = ZoneState.Contested;
     }
 
 }
