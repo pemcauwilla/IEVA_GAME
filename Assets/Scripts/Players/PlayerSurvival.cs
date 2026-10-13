@@ -16,20 +16,20 @@ public class PlayerSurvival : MonoBehaviour
     [SerializeField] private float healRate = 20f;
     [SerializeField] private float healInterval = 2f;
 
+    private Vector3 spawnPosition; // based on the world origin
     private bool isOnZone = false;
     private float healTimer = 0f;
     private float decayTimer = 0f;
-    private PlayerIdentity pId; // Store this in class so TryGetComponent doesn't get called on each death
 
     /// <summary>
     ///  Event to be played on player death
     /// </summary>
-    public event System.Action<PlayerIdentity> OnPlayerDied;
+    public event System.Action<PlayerSurvival> OnPlayerDied;
 
     private void Awake()
     {
         CurrentLife = maxLife;
-        TryGetComponent<PlayerIdentity>(out pId);
+        spawnPosition = transform.position;
     }
 
     private void OnTriggerEnter(Collider collider)
@@ -75,9 +75,17 @@ public class PlayerSurvival : MonoBehaviour
             decayTimer = 0f; 
             if(CurrentLife <= 0) // floating point numbers can be imprecise   
             {
-                if(pId != null) OnPlayerDied?.Invoke(pId);
+                OnPlayerDied?.Invoke(this);
             }
         }
     }
 
+    public void RevivePlayer() {
+        CurrentLife = maxLife;
+        // reset spawn point
+        transform.position = spawnPosition;
+        TryGetComponent<Rigidbody>(out var rb);
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+    }
 }

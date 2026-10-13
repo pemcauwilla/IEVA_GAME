@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ public class CaptureZone : MonoBehaviour
     public CaptureState CurrentState {get; private set;} = CaptureState.Neutral;
 
     /// <summary>
-    /// Fired when the zone is captured. Related to sound effects / visual effects
+    /// Triggered when the zone is captured. Related to sound effects / visual effects
     /// </summary>
     public event System.Action OnZoneCaptured; 
 

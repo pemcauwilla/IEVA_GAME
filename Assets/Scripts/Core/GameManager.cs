@@ -1,57 +1,83 @@
-using Unity.Mathematics;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Scripting;
 
 public class GameManager : MonoBehaviour
 {
-    public int scoreP1 = 0;
-    public int scoreP2 = 0;
-    public int targetScore = 30;
-    public float lastScoreTime = 0; 
-    public float scoringTimer = 1f; // each 1s scoring happens
-    public CaptureZone[] zones;
-    public event System.Action<PlayerTeam> OnGameOver;
-    private bool isGameOver = false;
+    [Header("Scoring Config")]
+    [SerializeField] private float scoringInterval = 2f;
+    [SerializeField] private int scoringValue = 10;
+    [SerializeField] private int maxScore = 100;
 
-    public void Start()
+    [Header("Death config")]
+    [SerializeField] private float respawnInterval = 3f;
+
+    [Header("Zones and Players")]
+    [SerializeField] private CaptureZone[] zones; 
+    [SerializeField] private PlayerSurvival[] players;
+
+    private float scoringTimer = 0f;
+    private Dictionary<PlayerIdentity, int> playerScoringMap = new();
+
+    public event System.Action<PlayerIdentity> OnGameWon;
+
+    private void Awake()
     {
-        lastScoreTime = Time.time;
-    }
-
-    public void Update()
-    {
-       if(Time.time - lastScoreTime >= scoringTimer)
+        foreach(var survival in players)
         {
-            lastScoreTime = Time.time;
-
-            foreach(CaptureZone zone in zones) 
-            {
-                if(zone.currentOwner == PlayerTeam.Player1) scoreP1++;
-                if(zone.currentOwner == PlayerTeam.Player2) scoreP2++;
-            }
-        }
-
-        if (!isGameOver)
-        {
-            if(scoreP1 >= targetScore) {
-                OnGameOver?.Invoke(PlayerTeam.Player1);
-                isGameOver = true;
-            }
-            
-            if(scoreP2 >= targetScore)
-            {
-                OnGameOver?.Invoke(PlayerTeam.Player2);
-                isGameOver = true;
-            } 
+            survival.OnPlayerDied += PlayerDeath;
         }
     }
 
-    public void ResetMatch()
+    private void OnDestroy()
     {
-        scoreP1 = 0;
-        scoreP2 = 0;
-        lastScoreTime = Time.time;
-        isGameOver = false;
+        foreach(var survival in players) // avoids calling methods that doesn't exist anymore with the event's '.Invoke()'
+        {
+            survival.OnPlayerDied -= PlayerDeath;
+        }
     }
 
+    private void Update()
+    {
+        scoringTimer += Time.deltaTime;
+
+        if(scoringTimer >= scoringInterval)
+        {
+            scoringTimer = 0f;
+            foreach(var zone in zones)
+            {
+                if(zone.CurrentOwner != null){
+                    if(!playerScoringMap.ContainsKey(zone.CurrentOwner)) playerScoringMap[zone.CurrentOwner] = 0;
+                    
+                    playerScoringMap[zone.CurrentOwner] += scoringValue;
+
+                    if(playerScoringMap[zone.CurrentOwner] >= maxScore) OnGameWon?.Invoke(zone.CurrentOwner);                
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Method called after a player death.
+    /// </summary>
+    /// <param name="player">PlayerIdentity component of the player who died.</param>
+    private void PlayerDeath(PlayerSurvival player) 
+    {
+        StartCoroutine(RespawnRoutine(player));
+    }
+
+    /// <summary>
+    /// Respawn coroutine so it is not needed to store each players respawn timer individually.
+    /// </summary>
+    /// <param name="player">PlayerIdentity component of the player who died.</param>
+    /// <returns></returns>
+    private System.Collections.IEnumerator RespawnRoutine(PlayerSurvival player)
+    {
+        player.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(respawnInterval);
+
+        player.gameObject.SetActive(true);
+        player.RevivePlayer();
+        
+    }
 }
