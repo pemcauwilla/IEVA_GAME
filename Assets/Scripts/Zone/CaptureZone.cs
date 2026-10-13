@@ -9,6 +9,9 @@ public enum CaptureState
     Captured
 }
 
+/// <summary>
+/// Class that implements the capturing zone state logic.
+/// </summary>
 public class CaptureZone : MonoBehaviour
 {
     

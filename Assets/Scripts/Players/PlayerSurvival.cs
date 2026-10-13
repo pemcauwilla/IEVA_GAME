@@ -1,55 +1,83 @@
 using UnityEngine;
+using UnityEngine.Scripting;
 
+/// <summary>
+/// Class that implements player damage and healing behavior
+/// </summary>
 public class PlayerSurvival : MonoBehaviour
 {
-
-    public float maxCoherence = 100f;
-    public float currentCoherence = 100f;
-    public float drainRate = 10f; // per second
-    public float regenRate = 20f; // per second
-    public bool isInSafeZone = false;
-    private bool isDead = false;
-    private PlayerIdentity playerIdentity;
-    public event System.Action<PlayerTeam> OnPlayerDied;
+    [Header("Player Stats")]
+    [SerializeField] public float maxLife = 100f;
+    public float CurrentLife {get; private set;} // UI need to see the current life but should not be able to set it 
     
-    public void Awake()
+    [Header("Game Balance")]
+    [SerializeField] private float decayRate = 10f;
+    [SerializeField] private float decayInterval = 2f;
+    [SerializeField] private float healRate = 20f;
+    [SerializeField] private float healInterval = 2f;
+
+    private bool isOnZone = false;
+    private float healTimer = 0f;
+    private float decayTimer = 0f;
+    private PlayerIdentity pId; // Store this in class so TryGetComponent doesn't get called on each death
+
+    /// <summary>
+    ///  Event to be played on player death
+    /// </summary>
+    public event System.Action<PlayerIdentity> OnPlayerDied;
+
+    private void Awake()
     {
-        playerIdentity = GetComponent<PlayerIdentity>();
+        CurrentLife = maxLife;
+        TryGetComponent<PlayerIdentity>(out pId);
     }
 
-    public void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider collider)
     {
-        if(other.TryGetComponent<CaptureZone>(out _))
+        if(collider.TryGetComponent<CaptureZone>(out var _))
         {
-            isInSafeZone = true;
+            isOnZone = true;
+            healTimer = 0f;
+            decayTimer = 0f;
         }
     }
 
-    public void OnTriggerExit(Collider other)
+    private void OnTriggerExit(Collider collider)
     {
-        if(other.TryGetComponent<CaptureZone>(out _)){
-            isInSafeZone = false;
-        }
-    }
-
-    public void Update()
-    {
-        if(isInSafeZone)
+        if(collider.TryGetComponent<CaptureZone>(out var _))
         {
-            currentCoherence = Mathf.Min(maxCoherence, currentCoherence + regenRate * Time.deltaTime);
-            return;
-        }
-
-        currentCoherence = Mathf.Max(0f, currentCoherence - drainRate * Time.deltaTime);
-        if(currentCoherence == 0 && !isDead) {
-            OnPlayerDied?.Invoke(playerIdentity.playerTeam);
-            isDead = true;
+            isOnZone = false;
+            healTimer = 0f;
+            decayTimer = 0f;
         }
     }
 
-    public void ResetCoherence()
+    private void Update()
     {
-        currentCoherence = maxCoherence;
-        isDead = false;
+        if (isOnZone)
+        {
+            healTimer += Time.deltaTime;
+        }
+        else
+        {
+            decayTimer += Time.deltaTime;
+        }
+
+        if(healTimer >= healInterval)
+        {
+            CurrentLife = Mathf.Min(maxLife, CurrentLife + healRate);
+            healTimer = 0f;
+        }
+
+        if(decayTimer >= decayInterval)
+        {
+            CurrentLife = Mathf.Max(0f, CurrentLife - decayRate);
+            decayTimer = 0f; 
+            if(CurrentLife <= 0) // floating point numbers can be imprecise   
+            {
+                if(pId != null) OnPlayerDied?.Invoke(pId);
+            }
+        }
     }
+
 }
