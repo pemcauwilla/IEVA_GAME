@@ -1,84 +1,114 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Playables;
 
-public enum ZoneState
+public enum CaptureState
 {
     Neutral,
     Capturing,
     Contested,
     Captured
 }
+
 public class CaptureZone : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    [SerializeField]
-    private float captureDuration = 3f;
-    [SerializeField]
-    private float currentProgress = 0f;
     
-    public PlayerTeam currentOwner = PlayerTeam.None;
-    private ZoneState currentState = ZoneState.Neutral;
 
-    private List<PlayerIdentity> playersInZone = new();
-    public event System.Action<PlayerTeam> OnZoneCaptured;
+    [Header("Capture config")]
+    [SerializeField] private float captureTime = 5.0f;
+    private float captureTimer = 0f;
 
-    public void OnTriggerEnter(Collider other)
+    private List<PlayerIdentity> playersInZone = new(); 
+    public PlayerIdentity CurrentOwner {get; private set;}
+
+    public CaptureState CurrentState {get; private set;} = CaptureState.Neutral;
+
+    /// <summary>
+    /// Fired when the zone is captured. Related to sound effects / visual effects
+    /// </summary>
+    public event System.Action OnZoneCaptured; 
+
+    private void OnTriggerEnter(Collider other)
     {
-        if(!other.TryGetComponent<PlayerIdentity>(out var player)) return; 
-        playersInZone.Add(player);
-    }
-
-    public void OnTriggerExit(Collider other)
-    {
-        if(!other.TryGetComponent<PlayerIdentity>(out var player)) return;
-        playersInZone.Remove(player);
-    }
-
-    public void Update()
-    {
-        switch (playersInZone.Count)
+        if(other.TryGetComponent<PlayerIdentity>(out var pId))
         {
-            case 0: HandleEmptyZone(); break;
-            case 1: HandleCapturing(); break;
-            case 2: HandleContesting(); break;
+            if(!playersInZone.Contains(pId)) playersInZone.Add(pId); // in case the player has two collider components
         }
+        UpdateState();
     }
 
-    private void HandleEmptyZone()
+    private void OnTriggerExit(Collider other)
     {
-        currentState = currentOwner == PlayerTeam.None ? ZoneState.Neutral : ZoneState.Captured;
-        currentProgress = 0f;
-    }
-
-    private void HandleCapturing()
-    {
-        PlayerTeam zonePlayer = playersInZone[0].playerTeam;
-
-        if(currentOwner == zonePlayer) {
-            currentState = ZoneState.Captured;
-            currentProgress = 0f;
-            return;
-        }
-
-        // Nobody has captured it yet or Changing zone ownership
-        currentProgress += Time.deltaTime;
-        currentState = ZoneState.Capturing;
-    
-        if(currentProgress >= captureDuration)
+        if(other.TryGetComponent<PlayerIdentity>(out var pId))
         {
-            if(zonePlayer != currentOwner) currentOwner = zonePlayer;
-            OnZoneCaptured?.Invoke(currentOwner); 
-            currentState = ZoneState.Captured;
-            currentProgress = 0f;  
+            playersInZone.Remove(pId);
+        }
+        UpdateState();
+    }
+
+    private void Update()
+    {
+        if(CurrentState == CaptureState.Capturing)
+        {
+            captureTimer += Time.deltaTime;
+
+            if(captureTimer >= captureTime)
+            {
+                UpdateState();
+                OnZoneCaptured?.Invoke();
+            }
         }
     }
 
-    private void HandleContesting()
+    /// <summary>
+    /// Updates the new state of the zone according to how many players there are and calls <ref>ApplyState()</ref>.
+    /// </summary>
+    private void UpdateState()
     {
-        currentState = ZoneState.Contested;
+        CaptureState newState = CaptureState.Neutral;
+        if(playersInZone.Count == 0)
+        {
+            newState = CurrentOwner == null ? CaptureState.Neutral : CaptureState.Captured;
+        }
+
+        if(playersInZone.Count == 1)
+        {
+            if(captureTimer < captureTime)
+            { 
+                newState = CurrentOwner != playersInZone[0] ? CaptureState.Capturing : CaptureState.Captured;
+            }
+            else 
+            {
+                newState = CaptureState.Captured;
+            }
+        }
+
+        if(playersInZone.Count == 2)
+        {
+            newState = CaptureState.Contested;
+        }
+
+        if(CurrentState != newState) {
+            CurrentState = newState;
+            ApplyState();
+        }
     }
 
+    /// <summary>
+    /// Update variables values according to the current state.
+    /// </summary>
+    private void ApplyState()
+    {
+        switch(CurrentState)
+        {
+            case CaptureState.Neutral: 
+                captureTimer = 0f;
+
+                break;
+
+            case CaptureState.Captured:
+                CurrentOwner = playersInZone[0];
+                captureTimer = 0f;
+                break;
+        }
+    }
 }
