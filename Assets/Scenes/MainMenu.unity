@@ -1666,7 +1666,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1453036821}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c78b91362939e342b5b98299c5fb98d, type: 3}
+  m_Script: {fileID: 11500000, guid: 9b8254db83e367e419f5c7ca69a8c613, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
   ControlsPanel: {fileID: 618165907}
