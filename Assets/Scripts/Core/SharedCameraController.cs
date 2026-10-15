@@ -16,6 +16,13 @@ public class SharedCameraController : MonoBehaviour
     public float FollowSmoothTime = 0.2f;
     public float ZoomSmoothTime = 0.2f;
 
+    [Header("Secousse d'impact")]
+    [Min(0.01f)] public float ShakeDuration = 0.18f;
+    [Min(0f)] public float ShakeStrength = 0.15f;
+
+    private Vector3 followPosition;
+    private float shakeRemaining;
+
     private Camera sharedCamera;
     private Vector3 followVelocity;
     private float zoomVelocity;
@@ -41,26 +48,31 @@ public class SharedCameraController : MonoBehaviour
 
         // Cadrage immédiat au début de la partie.
         transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-        transform.position = GetTargetPosition();
+        //transform.position = GetTargetPosition();
+        followPosition = GetTargetPosition();
+        transform.position = followPosition;
         sharedCamera.orthographicSize = GetRequiredSize();
     }
 
+    // Après T15
     void LateUpdate()
     {
         if (Player1 == null || Player2 == null)
             return;
 
-        transform.position = Vector3.SmoothDamp(
-            transform.position,
+        // Suivi indépendant de la secousse.
+        followPosition = Vector3.SmoothDamp(
+            followPosition,
             GetTargetPosition(),
             ref followVelocity,
             FollowSmoothTime
         );
 
+        transform.position = followPosition;
+
+        // Calcule le zoom avant d'ajouter la secousse.
         float requiredSize = GetRequiredSize();
 
-        // Élargit immédiatement le cadre pour ne pas perdre un joueur.
-        // Le rapprochement reste progressif.
         if (requiredSize > sharedCamera.orthographicSize)
         {
             sharedCamera.orthographicSize = requiredSize;
@@ -75,6 +87,74 @@ public class SharedCameraController : MonoBehaviour
                 ZoomSmoothTime
             );
         }
+
+        if (shakeRemaining > 0f)
+        {
+            float fade = Mathf.Clamp01(
+                shakeRemaining / Mathf.Max(ShakeDuration, 0.01f)
+            );
+
+            Vector2 offset =
+                Random.insideUnitCircle * ShakeStrength * fade;
+
+            // Caméra vue du dessus : déplacement sur le plan XZ.
+            transform.position = followPosition +
+                new Vector3(offset.x, 0f, offset.y);
+
+            shakeRemaining = Mathf.Max(
+                0f, shakeRemaining - Time.deltaTime
+            );
+        }
+    }
+
+    //void LateUpdate()
+    //{
+    //    if (Player1 == null || Player2 == null)
+    //        return;
+
+    //    transform.position = Vector3.SmoothDamp(
+    //        transform.position,
+    //        GetTargetPosition(),
+    //        ref followVelocity,
+    //        FollowSmoothTime
+    //    );
+
+    //    float requiredSize = GetRequiredSize();
+
+    //    // Élargit immédiatement le cadre pour ne pas perdre un joueur.
+    //    // Le rapprochement reste progressif.
+    //    if (requiredSize > sharedCamera.orthographicSize)
+    //    {
+    //        sharedCamera.orthographicSize = requiredSize;
+    //        zoomVelocity = 0f;
+    //    }
+    //    else
+    //    {
+    //        sharedCamera.orthographicSize = Mathf.SmoothDamp(
+    //            sharedCamera.orthographicSize,
+    //            requiredSize,
+    //            ref zoomVelocity,
+    //            ZoomSmoothTime
+    //        );
+    //    }
+    //}
+
+    [ContextMenu("Tester la secousse")]
+    public void PlayImpactShake()
+    {
+        if (!Application.isPlaying || !isActiveAndEnabled)
+            return;
+
+        shakeRemaining = Mathf.Max(ShakeDuration, 0.01f);
+    }
+
+    private void OnDisable()
+    {
+        shakeRemaining = 0f;
+        followVelocity = Vector3.zero;
+
+        if (sharedCamera != null)
+            transform.position = followPosition;
     }
 
     Vector3 GetTargetPosition()

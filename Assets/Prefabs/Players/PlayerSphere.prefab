@@ -183,6 +183,8 @@ MonoBehaviour:
   BumpImpulse: 6
   MinimumImpactSpeed: 1
   BumpCooldown: 0.5
+  ImpactCamera: {fileID: 0}
+  ImpactParticlesPrefab: {fileID: 3384722470055730077, guid: f3f82c002ac980147a46c242980d765e, type: 3}
 --- !u!114 &-6759188332246658718
 MonoBehaviour:
   m_ObjectHideFlags: 0
