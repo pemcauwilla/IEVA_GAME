@@ -7,6 +7,11 @@ public class PlayerBump : MonoBehaviour
     public float MinimumImpactSpeed = 1f;
     public float BumpCooldown = 0.5f;
 
+    [Header("Retour visuel")]
+    public SharedCameraController ImpactCamera;
+
+    public ParticleSystem ImpactParticlesPrefab;
+
     private Rigidbody body;
     private float nextBumpTime;
 
@@ -47,5 +52,24 @@ public class PlayerBump : MonoBehaviour
         );
 
         nextBumpTime = Time.time + BumpCooldown;
+
+        if (ImpactCamera != null)
+            ImpactCamera.PlayImpactShake();
+
+        if (ImpactParticlesPrefab != null)
+        {
+            Vector3 impactPosition = collision.contactCount > 0
+                ? collision.GetContact(0).point
+                : (body.worldCenterOfMass +
+                   otherBody.worldCenterOfMass) * 0.5f;
+
+            ParticleSystem particles = Instantiate(
+                ImpactParticlesPrefab,
+                impactPosition,
+                Quaternion.identity
+            );
+
+            particles.Play();
+        }
     }
 }
