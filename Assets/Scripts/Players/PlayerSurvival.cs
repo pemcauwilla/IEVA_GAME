@@ -7,17 +7,17 @@ using UnityEngine.Scripting;
 public class PlayerSurvival : MonoBehaviour
 {
     [Header("Player Stats")]
-    [SerializeField] public float maxLife = 100f;
+    [SerializeField] public int maxLife = 100;
     public float CurrentLife {get; private set;} // UI need to see the current life but should not be able to set it 
     
     [Header("Game Balance")]
-    [SerializeField] private float decayRate = 10f;
+    [SerializeField] private int decayRate = 10;
     [SerializeField] private float decayInterval = 2f;
-    [SerializeField] private float healRate = 20f;
+    [SerializeField] private int healRate = 20;
     [SerializeField] private float healInterval = 2f;
 
     private Vector3 spawnPosition; // based on the world origin
-    private bool isOnZone = false;
+    public bool isInSafeZone {get; private set;} = false;
     private float healTimer = 0f;
     private float decayTimer = 0f;
 
@@ -36,7 +36,7 @@ public class PlayerSurvival : MonoBehaviour
     {
         if(collider.TryGetComponent<CaptureZone>(out var _))
         {
-            isOnZone = true;
+            isInSafeZone = true;
             healTimer = 0f;
             decayTimer = 0f;
         }
@@ -46,7 +46,7 @@ public class PlayerSurvival : MonoBehaviour
     {
         if(collider.TryGetComponent<CaptureZone>(out var _))
         {
-            isOnZone = false;
+            isInSafeZone = false;
             healTimer = 0f;
             decayTimer = 0f;
         }
@@ -54,7 +54,7 @@ public class PlayerSurvival : MonoBehaviour
 
     private void Update()
     {
-        if (isOnZone)
+        if (isInSafeZone)
         {
             healTimer += Time.deltaTime;
         }
@@ -71,12 +71,9 @@ public class PlayerSurvival : MonoBehaviour
 
         if(decayTimer >= decayInterval)
         {
-            CurrentLife = Mathf.Max(0f, CurrentLife - decayRate);
+            TakeDamage(decayRate);
             decayTimer = 0f; 
-            if(CurrentLife <= 0) // floating point numbers can be imprecise   
-            {
-                OnPlayerDied?.Invoke(this);
-            }
+            
         }
     }
 
@@ -87,5 +84,13 @@ public class PlayerSurvival : MonoBehaviour
         TryGetComponent<Rigidbody>(out var rb);
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+    }
+
+    public void TakeDamage(int damage) {
+        CurrentLife = Mathf.Max(0, CurrentLife - damage);
+        if(CurrentLife <= 0) // floating point numbers can be imprecise   
+        {
+            OnPlayerDied?.Invoke(this);
+        }
     }
 }

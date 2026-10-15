@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,192 +12,214 @@ public enum GuardianState
 
 public class GuardianAI : MonoBehaviour
 {
+    [Header("Guardian Config")]
+    [SerializeField] private float patrolSpeed = 3.0f;
+    [SerializeField] private float chaseSpeed = 6.0f;
+    [SerializeField] private float angularSpeed = 720f;
+    [SerializeField] private int guardianDamage = 20;
+    [SerializeField] private float knockbackForce = 3.0f;
+    [SerializeField] private float closeDistance = 0.3f;
+    [SerializeField] private float detectionRange = 15.0f;
+    [SerializeField] private float detectionAngle = 70.0f;
+    
+    [Header("Animation Config")]
+    [SerializeField] private float waitingInterval = 2.0f;
+    private float waitingAngle = 45;
+    private float lastAgentAngle = 0f;
+    [SerializeField] private float stunnedInterval = 3.0f;
+    [SerializeField] private float alertInterval = 1.5f;
+
+    [Header("Waypoints")]
     [SerializeField] private Transform[] waypoints;
-    private int currentWaypoint = 0;
-    
-    [Header("State variables")]
-    [SerializeField] private float waitingTime = 3f;
-    private float waitedTime = 0f; 
-    [SerializeField] private float alertDuration = 0.5f;
-    private float alertTimer = 0f;
-    
-    [Header("Chase variables")]
-    [SerializeField] private float visionRange = 10f;
-    [SerializeField] private float stunDuration = 2f;
-    private float stunTimer = 0f;
-    [SerializeField] private float chaseSpeed = 6;  
-    private float patrolSpeed;
-    
-    [Header("Combat")]
-    [SerializeField] private float guardianDamage = 25f;
-    [SerializeField] private float pushStrength = 12f;
-    
-    private Transform currentTarget;
-    private GuardianState currentState = GuardianState.Patrolling;
+
+    private Transform targetPlayer;
     private NavMeshAgent navAgent;
+    private int currentWaypointIdx = 0;
+    private GuardianState currentState = GuardianState.Patrolling;    
+    private float chaseInterval = 0.2f;
+    private float waitTimer = 0f;
+    private float alertTimer = 0f;
+    private float stunTimer = 0f;
+    private float chaseTimer = 0f;
 
-    void Awake()
+    private void Awake()
     {
-        navAgent = GetComponent<NavMeshAgent>();
-        patrolSpeed = navAgent != null ? navAgent.speed : 0f;
+        TryGetComponent<NavMeshAgent>(out navAgent);
+        if(navAgent == null || waypoints == null) return;
+        navAgent.speed = patrolSpeed;
+        navAgent.angularSpeed = angularSpeed;
+        navAgent.SetDestination(waypoints[currentWaypointIdx].position);
     }
 
-    void Start()
+    private void Update()
     {
-        if (waypoints == null || waypoints.Length == 0) return;
-        navAgent.SetDestination(waypoints[currentWaypoint].position);
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (currentState != GuardianState.Chasing) return;
-  
-        if (collision.gameObject.TryGetComponent<PlayerSurvival>(out var survival))
+        // if the agent has arrived at the waypoint
+        DetectPlayer();
+        GuardianState nextState = UpdateState();
+        if(nextState != currentState)
         {
-            ApplyHit(survival);
-            navAgent.isStopped = true;
-            currentState = GuardianState.Stunned;
+            currentState = nextState;
+            OnStateChange();
         }
+        OnStateUpdate();
     }
 
-    void Update()
-    {
-        if (currentState == GuardianState.Patrolling || currentState == GuardianState.Waiting)
+    private void OnCollisionEnter(Collision other)
+    {   
+        if(other.collider.TryGetComponent<PlayerSurvival>(out var p))
         {
-            if (TryFindVisiblePlayer(out currentTarget))
+            if(currentState == GuardianState.Chasing) 
             {
-                currentState = GuardianState.Alerted;
-                navAgent.isStopped = true; 
-                // OnAlertSound?.Invoke();
-                return;
+                currentState = GuardianState.Stunned; // will only be stunned if chasing, else continue what it was doing
+                OnStateChange();
             }
+            ApplyHit(p);
         }
+    }
 
+    private GuardianState UpdateState()
+    {
+        switch(currentState)
+        {
+            case GuardianState.Patrolling: 
+                if(targetPlayer != null) return GuardianState.Alerted;
+
+                if(!navAgent.pathPending && navAgent.remainingDistance <= closeDistance)
+                {
+                    return GuardianState.Waiting;
+                }
+                break;
+
+            case GuardianState.Waiting:
+                if(targetPlayer != null) return GuardianState.Alerted;
+
+                if(waitTimer >= waitingInterval)
+                {
+                    return GuardianState.Patrolling;
+                }
+                break;
+
+            case GuardianState.Alerted:
+                if(alertTimer >= alertInterval)
+                {
+                    return GuardianState.Chasing;
+                }
+                break;
+
+            case GuardianState.Chasing:    
+                if(targetPlayer == null)
+                {
+                    return GuardianState.Patrolling;
+                }
+                break;
+
+            case GuardianState.Stunned:
+                if(stunTimer >= stunnedInterval)
+                {
+                    if(targetPlayer != null) return GuardianState.Chasing;
+                    else return GuardianState.Patrolling;
+                }
+                break;
+        }
+        return currentState;
+    }
+
+    private void OnStateChange()
+    {
+        switch(currentState)
+        {
+            case GuardianState.Patrolling:
+                navAgent.isStopped = false;
+                navAgent.autoBraking = true;
+                navAgent.speed = patrolSpeed;
+                navAgent.SetDestination(waypoints[currentWaypointIdx].position);
+                break;
+
+            case GuardianState.Waiting:
+                waitTimer = 0f;
+                lastAgentAngle = transform.eulerAngles.y;
+                navAgent.isStopped = true;
+                currentWaypointIdx = (currentWaypointIdx + 1) % waypoints.Length;
+                navAgent.SetDestination(waypoints[currentWaypointIdx].position);
+                break;
+
+            case GuardianState.Alerted:
+                alertTimer = 0f;
+                lastAgentAngle = transform.eulerAngles.y;
+                navAgent.isStopped = true;
+                break;
+
+            case GuardianState.Chasing:
+                navAgent.autoBraking = false;
+                navAgent.isStopped = false;
+                navAgent.speed = chaseSpeed;
+                if(targetPlayer != null) navAgent.SetDestination(targetPlayer.position);
+                break;    
+
+            case GuardianState.Stunned:
+                stunTimer = 0f;
+                navAgent.isStopped = true;
+                break;
+        }
+    }
+
+    private void OnStateUpdate()
+    {
         switch (currentState)
         {
-            case GuardianState.Patrolling: HandlePatrolling(); break;
-            case GuardianState.Waiting: HandleWaiting(); break;
-            case GuardianState.Alerted: HandleAlert(); break;
-            case GuardianState.Chasing: HandleChasing(); break;
-            case GuardianState.Stunned: HandleStun(); break;
+            case GuardianState.Waiting: 
+                waitTimer += Time.deltaTime;
+                navAgent.transform.rotation = ProcessAnimationRotation(waitTimer, waitingInterval, 2, waitingAngle, lastAgentAngle); 
+                break;
+            case GuardianState.Alerted: 
+                alertTimer += Time.deltaTime; 
+                if(targetPlayer != null) navAgent.transform.LookAt(new Vector3(targetPlayer.position.x, transform.position.y, targetPlayer.position.z));
+                break;
+            case GuardianState.Stunned: stunTimer += Time.deltaTime; break;
+            case GuardianState.Chasing: 
+                chaseTimer = chaseTimer > chaseInterval ? 0f : chaseTimer + Time.deltaTime; 
+                if(targetPlayer != null && chaseTimer >= chaseInterval) navAgent.SetDestination(targetPlayer.position); 
+                break;
         }
     }
 
-    void HandlePatrolling()
+    private Quaternion ProcessAnimationRotation(float timer, float interval, float freq, float angleRange, float baseAngle)
     {
-        if(!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
-        {
-            currentState = GuardianState.Waiting;
-            waitedTime = 0f;
-        }
+        float newRotationAngle = baseAngle + (Mathf.Sin(timer/interval * Mathf.PI * freq) * angleRange);
+        return Quaternion.Euler(0f, newRotationAngle, 0f);
     }
 
-    void HandleWaiting()
+    private void DetectPlayer()
     {
-        waitedTime += Time.deltaTime;
-
-        if(waitedTime >= waitingTime)
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRange); // use this so it's not needed to store the player list to iterate through
+        foreach(var hitCollider in hitColliders)
         {
-            currentWaypoint = (currentWaypoint + 1) % waypoints.Length;
-            navAgent.SetDestination(waypoints[currentWaypoint].position);
-            currentState = GuardianState.Patrolling;
-        }
-    }
-
-    void HandleAlert()
-    {
-        alertTimer += Time.deltaTime;
-        Vector3 lookPos = new Vector3(currentTarget.position.x, transform.position.y, currentTarget.position.z); // should not rotate in Y axis
-        transform.LookAt(lookPos);
-        if(alertTimer >= alertDuration)
-        {
-            navAgent.isStopped = false;
-            navAgent.speed = chaseSpeed;
-            currentState = GuardianState.Chasing;
-            alertTimer = 0f;
-        }
-    }
-
-    void HandleChasing()
-    {
-        if(currentTarget == null)
-        {
-            ReturnToPatrol();
-            return;
-        }
-
-        // if player escaped
-        float distance = Vector3.Distance(transform.position, currentTarget.position);
-        bool isSafe = currentTarget.TryGetComponent<PlayerSurvival>(out var survival) && survival.isInSafeZone;
-        bool isTooFar = distance >= visionRange * 1.5f;
-        if(isSafe || isTooFar) 
-        {
-            ReturnToPatrol();
-            return;
-        } 
-
-        navAgent.SetDestination(currentTarget.position);
-    }
-
-    void HandleStun()
-    {
-        stunTimer += Time.deltaTime;
-        if(stunTimer >= stunDuration)
-        {
-            navAgent.isStopped = false;
-            ReturnToPatrol();
-            stunTimer = 0f;
-        }
-    }
-
-    private void ReturnToPatrol()
-    {
-        navAgent.speed = patrolSpeed;
-        navAgent.SetDestination(waypoints[currentWaypoint].position);
-        currentState = GuardianState.Patrolling;
-        currentTarget = null;
-    }
-
-    bool TryFindVisiblePlayer(out Transform targetPlayer)
-    {
-        targetPlayer = null;
-  
-        Collider[] hits = Physics.OverlapSphere(transform.position, visionRange);
-  
-        foreach (var hit in hits)
-        {
-            // is it a player?
-            if (hit.TryGetComponent<PlayerSurvival>(out var survival))
+            if(hitCollider.TryGetComponent<PlayerSurvival>(out var player))
             {
-                // if in capture zone, do nothing
-                if (survival.isInSafeZone) continue;
-  
-                // raycast on eye height to see if player is behind obstacle
-                Vector3 eyePos = transform.position + Vector3.up * 0.5f; // eye height
-                Vector3 dirToPlayer = (hit.bounds.center - eyePos).normalized; // bounds.center always return central position, not possible "feet pivot"
-  
-                if (Physics.Raycast(eyePos, dirToPlayer, out RaycastHit rayHit, visionRange)) // visionRange = max raycast distance
+                Vector3 targetDir = player.transform.position - transform.position;
+                bool isPlayerInFov = Vector3.Angle(targetDir, transform.forward) <= detectionAngle;
+                
+                if(Physics.Raycast(transform.position, targetDir, out var hit, detectionRange) && isPlayerInFov && !player.isInSafeZone) // if player's in fov the raycast can be directed at him 
                 {
-                    // if hit is a player and not an obstacle
-                    if (rayHit.transform == hit.transform)
+                    if (hit.collider.TryGetComponent<PlayerSurvival>(out _))
                     {
-                        targetPlayer = hit.transform;
-                        return true;
+                        targetPlayer = player.transform;         
+                        return;              
                     }
                 }
             }
         }
-        return false; 
+        targetPlayer = null; 
     }
 
-    void ApplyHit(PlayerSurvival survival)
+    private void ApplyHit(PlayerSurvival player)
     {
-        survival.currentCoherence = Mathf.Max(0f, survival.currentCoherence - guardianDamage);
-
-        survival.TryGetComponent<Rigidbody>(out var rb);
-        
-        Vector3 pushDir = (survival.transform.position - transform.position).normalized;
-        pushDir.y = 0.2f;
-        rb?.AddForce(pushDir.normalized * pushStrength, ForceMode.Impulse);
+        player.TakeDamage(guardianDamage);
+        if(player.TryGetComponent<Rigidbody>(out var rb))
+        {
+            Vector3 normDistance = (player.transform.position - transform.position).normalized;
+            rb.AddForce(normDistance * knockbackForce, ForceMode.Impulse); // impulse for knockback
+        }
     }
+
 }
