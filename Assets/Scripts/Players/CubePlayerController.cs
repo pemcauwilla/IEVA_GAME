@@ -4,20 +4,22 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class CubePlayerController : MonoBehaviour
 {
-    [Header("Touches - positions sur un clavier QWERTY")]
+    [Header("Movement Keys (QWERTY/WASD Layout)")]
     public Key ForwardKey = Key.W;
     public Key BackwardKey = Key.S;
     public Key LeftKey = Key.A;
     public Key RightKey = Key.D;
 
-    [Header("Déplacement")]
+    [Header("Movement Settings")]
     public float Acceleration = 30f;
     public float MaxSpeed = 5f;
 
-    [Header("Dash")]
+    [Header("Dash Settings")]
     public Key DashKey = Key.Space;
     public float DashImpulse = 8f;
     public float DashCooldown = 3f;
+
+    public event System.Action OnPlayerDashed;
 
     private Vector3 lastMoveDirection = Vector3.forward;
     private bool dashRequested;
@@ -47,7 +49,6 @@ public class CubePlayerController : MonoBehaviour
         if (keyboard[LeftKey].isPressed) horizontal -= 1f;
         if (keyboard[RightKey].isPressed) horizontal += 1f;
 
-        // Évite une accélération plus forte en diagonale.
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
         if (moveDirection != Vector3.zero)
@@ -76,16 +77,15 @@ public class CubePlayerController : MonoBehaviour
                 );
 
                 nextDashTime = Time.time + DashCooldown;
+                OnPlayerDashed?.Invoke();
             }
         }
         if (moveDirection == Vector3.zero)
             return;
 
-        // Vitesse actuelle dans la direction demandée.
         float speedInDirection =
             Vector3.Dot(body.linearVelocity, moveDirection);
 
-        // Applique une force sans remplacer la vitesse des collisions.
         if (speedInDirection < MaxSpeed)
         {
             body.AddForce(

@@ -1,75 +1,84 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerBump : MonoBehaviour
 {
-    public float BumpImpulse = 6f;
-    public float MinimumImpactSpeed = 1f;
-    public float BumpCooldown = 0.5f;
+    [Header("Impulse Settings")]
+    [FormerlySerializedAs("BumpImpulse")]
+    [SerializeField] private float bumpImpulse = 6f;
 
-    [Header("Retour visuel")]
-    public SharedCameraController ImpactCamera;
+    [FormerlySerializedAs("MinimumImpactSpeed")]
+    [SerializeField] private float minimumImpactSpeed = 1f;
 
-    public ParticleSystem ImpactParticlesPrefab;
+    [FormerlySerializedAs("BumpCooldown")]
+    [SerializeField] private float bumpCooldown = 0.5f;
+
+    [Header("Feedback")]
+    [FormerlySerializedAs("ImpactCamera")]
+    [SerializeField] private SharedCameraController impactCamera;
+
+    public float BumpImpulse { get => bumpImpulse; set => bumpImpulse = value; }
+    public float MinimumImpactSpeed { get => minimumImpactSpeed; set => minimumImpactSpeed = value; }
+    public float BumpCooldown { get => bumpCooldown; set => bumpCooldown = value; }
+    public SharedCameraController ImpactCamera { get => impactCamera; set => impactCamera = value; }
+
+    public event System.Action OnPlayersBumped;
+    public event System.Action<Vector3> OnPlayersBumpedAt;
 
     private Rigidbody body;
     private float nextBumpTime;
 
-    void Awake()
+    #region UnityLifecycle
+    private void Awake()
     {
         body = GetComponent<Rigidbody>();
+        if (impactCamera == null) impactCamera = FindFirstObjectByType<SharedCameraController>();
     }
 
-    void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         Rigidbody otherBody = collision.rigidbody;
 
         if (otherBody == null || otherBody.isKinematic)
             return;
 
-        // Pour ce premier test, on pousse uniquement le joueur Cube.
-        if (otherBody.GetComponent<CubePlayerController>() == null)
+        if (!otherBody.TryGetComponent<PlayerSurvival>(out _))
             return;
 
         if (Time.time < nextBumpTime)
             return;
 
-        if (collision.relativeVelocity.magnitude < MinimumImpactSpeed)
+        if (collision.relativeVelocity.magnitude < minimumImpactSpeed)
             return;
 
-        // Direction horizontale de la Sphère vers le Cube.
-        Vector3 direction =
-            otherBody.worldCenterOfMass - body.worldCenterOfMass;
-
+        Vector3 direction = otherBody.worldCenterOfMass - body.worldCenterOfMass;
         direction.y = 0f;
 
         if (direction.sqrMagnitude < 0.001f)
             return;
 
-        otherBody.AddForce(
-            direction.normalized * BumpImpulse,
-            ForceMode.Impulse
-        );
+        otherBody.AddForce(direction.normalized * bumpImpulse, ForceMode.Impulse);
+        nextBumpTime = Time.time + bumpCooldown;
 
-        nextBumpTime = Time.time + BumpCooldown;
+        Vector3 impactPosition = collision.contactCount > 0
+            ? collision.GetContact(0).point
+            : (body.worldCenterOfMass + otherBody.worldCenterOfMass) * 0.5f;
 
-        if (ImpactCamera != null)
-            ImpactCamera.PlayImpactShake();
+        OnPlayersBumped?.Invoke();
+        OnPlayersBumpedAt?.Invoke(impactPosition);
 
-        if (ImpactParticlesPrefab != null)
+        TriggerFeedback();
+    }
+    #endregion
+
+    #region Helper Methods
+    private void TriggerFeedback()
+    {
+        if (impactCamera != null)
         {
-            Vector3 impactPosition = collision.contactCount > 0
-                ? collision.GetContact(0).point
-                : (body.worldCenterOfMass +
-                   otherBody.worldCenterOfMass) * 0.5f;
-
-            ParticleSystem particles = Instantiate(
-                ImpactParticlesPrefab,
-                impactPosition,
-                Quaternion.identity
-            );
-
-            particles.Play();
+            impactCamera.PlayImpactShake();
         }
     }
+    #endregion
 }
