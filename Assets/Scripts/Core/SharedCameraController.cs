@@ -3,16 +3,17 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class SharedCameraController : MonoBehaviour
 {
-    [Header("Joueurs à suivre")]
+    [Header("Joueurs ï¿½ suivre")]
     public Transform Player1;
     public Transform Player2;
 
     [Header("Cadrage")]
     public float Height = 20f;
     public float MinSize = 6f;
+    public float MaxSize = 13.5f;
     public float Padding = 2f;
 
-    [Header("Fluidité")]
+    [Header("Fluiditï¿½")]
     public float FollowSmoothTime = 0.2f;
     public float ZoomSmoothTime = 0.2f;
 
@@ -46,7 +47,7 @@ public class SharedCameraController : MonoBehaviour
             return;
         }
 
-        // Cadrage immédiat au début de la partie.
+        // Cadrage immï¿½diat au dï¿½but de la partie.
         transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         //transform.position = GetTargetPosition();
         followPosition = GetTargetPosition();
@@ -54,13 +55,13 @@ public class SharedCameraController : MonoBehaviour
         sharedCamera.orthographicSize = GetRequiredSize();
     }
 
-    // Après T15
+    // Aprï¿½s T15
     void LateUpdate()
     {
         if (Player1 == null || Player2 == null)
             return;
 
-        // Suivi indépendant de la secousse.
+        // Suivi indï¿½pendant de la secousse.
         followPosition = Vector3.SmoothDamp(
             followPosition,
             GetTargetPosition(),
@@ -97,7 +98,7 @@ public class SharedCameraController : MonoBehaviour
             Vector2 offset =
                 Random.insideUnitCircle * ShakeStrength * fade;
 
-            // Caméra vue du dessus : déplacement sur le plan XZ.
+            // Camï¿½ra vue du dessus : dï¿½placement sur le plan XZ.
             transform.position = followPosition +
                 new Vector3(offset.x, 0f, offset.y);
 
@@ -121,7 +122,7 @@ public class SharedCameraController : MonoBehaviour
 
     //    float requiredSize = GetRequiredSize();
 
-    //    // Élargit immédiatement le cadre pour ne pas perdre un joueur.
+    //    // ï¿½largit immï¿½diatement le cadre pour ne pas perdre un joueur.
     //    // Le rapprochement reste progressif.
     //    if (requiredSize > sharedCamera.orthographicSize)
     //    {
@@ -165,7 +166,7 @@ public class SharedCameraController : MonoBehaviour
 
     float GetRequiredSize()
     {
-        // Mesure les écarts depuis le centre réel de la caméra.
+        // Mesure les ï¿½carts depuis le centre rï¿½el de la camï¿½ra.
         // Cela tient compte du retard du suivi progressif.
         float horizontalExtent = Mathf.Max(
             Mathf.Abs(Player1.position.x - transform.position.x),
@@ -179,10 +180,11 @@ public class SharedCameraController : MonoBehaviour
 
         float aspect = Mathf.Max(sharedCamera.aspect, 0.01f);
 
-        return Mathf.Max(
-            MinSize,
+        float requiredSize = Mathf.Max(
             verticalExtent + Padding,
             (horizontalExtent + Padding) / aspect
         );
+
+        return Mathf.Clamp(requiredSize, MinSize, MaxSize);
     }
 }
