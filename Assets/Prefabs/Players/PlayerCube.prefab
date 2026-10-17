@@ -159,8 +159,8 @@ MonoBehaviour:
   BackwardKey: 33
   LeftKey: 15
   RightKey: 18
-  Acceleration: 30
-  MaxSpeed: 5
+  Acceleration: 60
+  MaxSpeed: 8
   DashKey: 1
   DashImpulse: 8
   DashCooldown: 3
@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed7ded1d59b9071d29dfc757cac0644f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerIdentity
-  playerTeam: 1
+  team: 0
 --- !u!114 &5846365230637591055
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,8 +189,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cfb8f84414147f2dd996db8642d39fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSurvival
-  maxCoherence: 100
-  currentCoherence: 100
-  drainRate: 10
-  regenRate: 20
-  isInSafeZone: 0
+  maxLife: 100
+  decayRate: 10
+  decayInterval: 2
+  healRate: 20
+  healInterval: 2
