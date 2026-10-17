@@ -1284,7 +1284,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1586150353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1297,9 +1297,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c283c397af507eb4a5dc86bdc9306e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  scoringInterval: 2
-  scoringValue: 10
   maxScore: 100
+  scoringValue: 10
+  scoringInterval: 2
   respawnInterval: 3
   zones:
   - {fileID: 1151015037}
@@ -1473,9 +1473,12 @@ GameObject:
   - component: {fileID: 2017695704}
   - component: {fileID: 2017695703}
   - component: {fileID: 2017695702}
-  - component: {fileID: 2017695701}
   - component: {fileID: 2017695700}
+  - component: {fileID: 2017695707}
+  - component: {fileID: 2017695706}
   - component: {fileID: 2017695705}
+  - component: {fileID: 2017695708}
+  - component: {fileID: 2017695709}
   m_Layer: 0
   m_Name: Guardian
   m_TagString: Untagged
@@ -1505,27 +1508,6 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!65 &2017695701
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2017695699}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &2017695702
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1592,7 +1574,7 @@ Transform:
   m_GameObject: {fileID: 2017695699}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.4324, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1607,25 +1589,101 @@ MonoBehaviour:
   m_GameObject: {fileID: 2017695699}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 150c50005e35b2081b28c9f9bd54fe71, type: 3}
+  m_Script: {fileID: 11500000, guid: e79fa34940002d9af9fab68995cb8ff5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GuardianAI
-  patrolSpeed: 5
+  m_EditorClassIdentifier: Assembly-CSharp::GuardianManager
+  guardianDamage: 15
+  knockbackForce: 8
+  alertInterval: 2
+  stunnedInterval: 3
+  repathInterval: 0.2
+--- !u!114 &2017695706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2017695699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f52425edf4900b788797331ef51d167, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuardianMotor
+  patrolSpeed: 3.5
   chaseSpeed: 9
   angularSpeed: 720
-  guardianDamage: 20
-  knockbackForce: 3
   closeDistance: 0.3
-  detectionRange: 15
-  detectionAngle: 70
-  waitingInterval: 2
-  stunnedInterval: 3
-  alertInterval: 0.6
   waypoints:
   - {fileID: 176704009}
   - {fileID: 849056993}
   - {fileID: 24563808}
   - {fileID: 1663122878}
+  waitingAngle: 45
+  waitingAnimationTime: 2
+--- !u!114 &2017695707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2017695699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e7b78fd5a94fd1c0aa34ec05892c59c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuardianSensor
+  detectionRange: 15
+  fov: 140
+--- !u!54 &2017695708
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2017695699}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &2017695709
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2017695699}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.6
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2036275346
 GameObject:
   m_ObjectHideFlags: 0
