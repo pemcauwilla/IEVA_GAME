@@ -1,7 +1,9 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Enum that represents all the possible states of a <see cref="CaptureZone"/>
+/// </summary>
 public enum CaptureState
 {
     Neutral,
@@ -15,40 +17,25 @@ public enum CaptureState
 /// </summary>
 public class CaptureZone : MonoBehaviour
 {
-    
-
-    [Header("Capture config")]
+    [Header("Capture Parameters")]
+    [Tooltip("Time taken (in seconds) for a player to capture a Zone")]
     [SerializeField] private float captureTime = 5.0f;
-    private float captureTimer = 0f;
-
-    private List<PlayerIdentity> playersInZone = new(); 
+    
+    // Public members
+    /// <summary> The last player who has captured this CaptureZone </summary>
     public PlayerIdentity CurrentOwner {get; private set;}
-
+    /// <summary> This CaptureZone's current state</summary>
     public CaptureState CurrentState {get; private set;} = CaptureState.Neutral;
-
-    /// <summary>
-    /// Triggered when the zone is captured. Related to sound effects / visual effects
-    /// </summary>
-    public event System.Action OnZoneCaptured; 
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if(other.TryGetComponent<PlayerIdentity>(out var pId))
-        {
-            if(!playersInZone.Contains(pId)) playersInZone.Add(pId); // in case the player has two collider components
-        }
-        UpdateState();
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if(other.TryGetComponent<PlayerIdentity>(out var pId))
-        {
-            playersInZone.Remove(pId);
-        }
-        UpdateState();
-    }
-
+    /// <summary> Triggered when the zone is captured. Related to sound effects / visual effects </summary>
+    public event System.Action<CaptureZone, PlayerIdentity> OnZoneCaptured; 
+    /// <summary> Floating point number that represents the progress of the ongoing capture </summary>
+    public float CaptureProgress => Mathf.Clamp01(captureTimer / captureTime);
+  
+    // Private members
+    private List<PlayerIdentity> playersInZone = new();
+    private float captureTimer = 0f;
+    
+    #region UnityLifecycle
     private void Update()
     {
         if(CurrentState == CaptureState.Capturing)
@@ -57,16 +44,32 @@ public class CaptureZone : MonoBehaviour
 
             if(captureTimer >= captureTime)
             {
-                UpdateState();
-                OnZoneCaptured?.Invoke();
+                EvaluateState();
+                if(CurrentOwner != null) OnZoneCaptured?.Invoke(this, CurrentOwner);
             }
         }
     }
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.TryGetComponent<PlayerIdentity>(out var pId))
+        {
+            if(!playersInZone.Contains(pId)) playersInZone.Add(pId); // Verifies if the player's already in the zone (they may have two colliders)
+        }
+        EvaluateState();
+    }
 
-    /// <summary>
-    /// Updates the new state of the zone according to how many players there are and calls <ref>ApplyState()</ref>.
-    /// </summary>
-    private void UpdateState()
+    private void OnTriggerExit(Collider other)
+    {
+        if(other.TryGetComponent<PlayerIdentity>(out var pId))
+        {
+            playersInZone.Remove(pId);
+        }
+        EvaluateState();
+    }
+    #endregion
+
+    #region Helper Methods
+    private void EvaluateState()
     {
         CaptureState newState = CaptureState.Neutral;
         if(playersInZone.Count == 0)
@@ -93,26 +96,22 @@ public class CaptureZone : MonoBehaviour
 
         if(CurrentState != newState) {
             CurrentState = newState;
-            ApplyState();
+            OnStateChanged();
         }
     }
 
-    /// <summary>
-    /// Update variables values according to the current state.
-    /// </summary>
-    private void ApplyState()
+    private void OnStateChanged()
     {
+        captureTimer = 0f;
         switch(CurrentState)
         {
-            case CaptureState.Neutral: 
-                captureTimer = 0f;
-
-                break;
-
             case CaptureState.Captured:
-                CurrentOwner = playersInZone[0];
-                captureTimer = 0f;
+                if(playersInZone.Count > 0)
+                {
+                    CurrentOwner = playersInZone[0];
+                }
                 break;
         }
     }
+    #endregion
 }
