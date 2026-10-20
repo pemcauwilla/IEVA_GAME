@@ -977,7 +977,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.20000002, g: 0.20000002, b: 0.20000002, a: 0.392}
+  m_Color: {r: 0.02, g: 0.03, b: 0.05, a: 0.98}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1669,8 +1669,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b8254db83e367e419f5c7ca69a8c613, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
-  ControlsPanel: {fileID: 618165907}
-  GameSceneName: Scene_Dev1
+  controlsPanel: {fileID: 618165907}
+  hudObject: {fileID: 0}
+  gameSceneName: Scene_LinearArena
+  titleText: {fileID: 860045997}
+  controlsText: {fileID: 49078599}
+  playButton: {fileID: 397971469}
+  controlsButton: {fileID: 286813739}
+  quitButton: {fileID: 1802284474}
+  closeControlsButton: {fileID: 1543059503}
+  themeController: {fileID: 0}
 --- !u!1 &1543059501
 GameObject:
   m_ObjectHideFlags: 0

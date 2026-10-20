@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'TEMPS TEST : 01:30'
+  m_text: 'ROTATION : 18s'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -277,7 +277,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "CUBE \u2014 COH\xC9RENCE TEST : 100 %"
+  m_text: 'JOUEUR 1 : 100 %'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -490,7 +490,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'A : NEUTRE     B : NEUTRE     C : NEUTRE'
+  m_text: 'ZONE 1 : [NEUTRE]     ZONE 2 : [NEUTRE]     ZONE 3 : [NEUTRE]'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -627,7 +627,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "SPH\xC8RE \u2014 COH\xC9RENCE TEST : 100 %"
+  m_text: 'JOUEUR 2 : 100 %'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -908,28 +908,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 2451021238390362158}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9f4a83306eb1444d935f6bdb22970d1, type: 3}
+  m_Script: {fileID: 11500000, guid: 212a9e1cd5f502249baff8fbc3e1a6e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameHUDController
-  CubeCoherenceSlider: {fileID: 7975441708359075409}
-  SphereCoherenceSlider: {fileID: 646893542479491234}
-  CubeCoherenceText: {fileID: 4684440218887861029}
-  SphereCoherenceText: {fileID: 5204280092165884987}
-  MatchTimerText: {fileID: 8994829925918001038}
-  ZoneStatusText: {fileID: 5118806697231706084}
-  ScoreText: {fileID: 6559530394286867550}
-  EndGamePanel: {fileID: 1901171528915453668}
-  EndGameText: {fileID: 7356952065011636218}
-  CubeCoherence: 100
-  SphereCoherence: 100
-  RemainingTime: 90
-  CubeScore: 0
-  SphereScore: 0
-  ZoneAStatus: NEUTRE
-  ZoneBStatus: NEUTRE
-  ZoneCStatus: NEUTRE
-  ShowEndPanel: 0
-  EndMessage: "FIN DE PARTIE\nR\xE9sultat de test"
+  player1HealthSlider: {fileID: 7975441708359075409}
+  player1HealthText: {fileID: 4684440218887861029}
+  p1SliderFill: {fileID: 4964642047332180018}
+  player2HealthSlider: {fileID: 646893542479491234}
+  player2HealthText: {fileID: 5204280092165884987}
+  p2SliderFill: {fileID: 8743573544821133838}
+  matchTimerText: {fileID: 8994829925918001038}
+  scoreText: {fileID: 6559530394286867550}
+  zoneStatusText: {fileID: 5118806697231706084}
+  endGamePanel: {fileID: 1901171528915453668}
+  endGameText: {fileID: 7356952065011636218}
+  gameManager: {fileID: 0}
+  movingZoneController: {fileID: 0}
+  player1Survival: {fileID: 0}
+  player2Survival: {fileID: 0}
+  player1Identity: {fileID: 0}
+  player2Identity: {fileID: 0}
+  captureZones: []
+  mainMenuController: {fileID: 0}
+  themeController: {fileID: 0}
 --- !u!1 &2586532323257556210
 GameObject:
   m_ObjectHideFlags: 0
@@ -1232,7 +1233,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "FIN DE PARTIE\r\nR\xE9sultat de test"
+  m_text: FIN DE PARTIE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1519,7 +1520,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "SCORE TEST \u2014 CUBE : 0     SPH\xC8RE : 0"
+  m_text: "SCORE   JOUEUR 1 : 0 / 100     \u2014     JOUEUR 2 : 0 / 100"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
