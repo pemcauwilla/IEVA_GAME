@@ -4,11 +4,17 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class CubePlayerController : MonoBehaviour
 {
-    [Header("Movement Keys (QWERTY/WASD Layout)")]
+    [Header("Primary Movement Keys")]
     public Key ForwardKey = Key.W;
     public Key BackwardKey = Key.S;
     public Key LeftKey = Key.A;
     public Key RightKey = Key.D;
+
+    [Header("Alternative Movement Keys (e.g. AZERTY / Layout Fallbacks)")]
+    public Key AltForwardKey = Key.Z;
+    public Key AltBackwardKey = Key.None;
+    public Key AltLeftKey = Key.Q;
+    public Key AltRightKey = Key.None;
 
     [Header("Movement Settings")]
     public float Acceleration = 30f;
@@ -16,6 +22,7 @@ public class CubePlayerController : MonoBehaviour
 
     [Header("Dash Settings")]
     public Key DashKey = Key.Space;
+    public Key AltDashKey = Key.None;
     public float DashImpulse = 8f;
     public float DashCooldown = 3f;
 
@@ -31,6 +38,14 @@ public class CubePlayerController : MonoBehaviour
     void Awake()
     {
         body = GetComponent<Rigidbody>();
+        EnsureAltBindingDefaults();
+    }
+
+    private void EnsureAltBindingDefaults()
+    {
+        if (ForwardKey == Key.W && AltForwardKey == Key.None) AltForwardKey = Key.Z;
+        if (LeftKey == Key.A && AltLeftKey == Key.None) AltLeftKey = Key.Q;
+        if (DashKey == Key.RightShift && AltDashKey == Key.None) AltDashKey = Key.Enter;
     }
 
     void Update()
@@ -44,10 +59,10 @@ public class CubePlayerController : MonoBehaviour
         float horizontal = 0f;
         float vertical = 0f;
 
-        if (keyboard[ForwardKey].isPressed) vertical += 1f;
-        if (keyboard[BackwardKey].isPressed) vertical -= 1f;
-        if (keyboard[LeftKey].isPressed) horizontal -= 1f;
-        if (keyboard[RightKey].isPressed) horizontal += 1f;
+        if (IsActionPressed(keyboard, ForwardKey, AltForwardKey)) vertical += 1f;
+        if (IsActionPressed(keyboard, BackwardKey, AltBackwardKey)) vertical -= 1f;
+        if (IsActionPressed(keyboard, LeftKey, AltLeftKey)) horizontal -= 1f;
+        if (IsActionPressed(keyboard, RightKey, AltRightKey)) horizontal += 1f;
 
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
@@ -56,11 +71,22 @@ public class CubePlayerController : MonoBehaviour
             lastMoveDirection = moveDirection;
         }
 
-        if (keyboard[DashKey].wasPressedThisFrame &&
-            Time.time >= nextDashTime)
+        if (WasActionPressed(keyboard, DashKey, AltDashKey) && Time.time >= nextDashTime)
         {
             dashRequested = true;
         }
+    }
+
+    private bool IsActionPressed(Keyboard kb, Key primary, Key alt)
+    {
+        return (primary != Key.None && kb[primary].isPressed) ||
+               (alt != Key.None && kb[alt].isPressed);
+    }
+
+    private bool WasActionPressed(Keyboard kb, Key primary, Key alt)
+    {
+        return (primary != Key.None && kb[primary].wasPressedThisFrame) ||
+               (alt != Key.None && kb[alt].wasPressedThisFrame);
     }
 
     void FixedUpdate()

@@ -89,7 +89,7 @@ public class MainMenuController : MonoBehaviour
     }
     #endregion
 
-    #region Public API (Ações de Botões)
+    #region Public API
     public void PlayGame()
     {
         Time.timeScale = 1f;
@@ -103,7 +103,7 @@ public class MainMenuController : MonoBehaviour
 
         if (!Application.CanStreamedLevelBeLoaded(gameSceneName))
         {
-            Debug.LogError($"A cena '{gameSceneName}' deve estar na lista de Build Settings.");
+            Debug.LogError($"La scène '{gameSceneName}' doit être présente dans les Build Settings.");
             return;
         }
 
@@ -140,7 +140,7 @@ public class MainMenuController : MonoBehaviour
     public void QuitGame()
     {
 #if UNITY_EDITOR
-        Debug.Log("QuitGame: Parando o modo Play no Editor.");
+        Debug.Log("QuitGame: Arrêt du mode Play dans l'éditeur.");
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
@@ -171,14 +171,13 @@ public class MainMenuController : MonoBehaviour
         if (controlsText != null)
         {
             controlsText.text =
-                $"<size=115%><b><color=#F8FAFC>COMMANDES & RÈGLES D'ENGAGEMENT</color></b></size>\n\n" +
-                $"<color=#{p1Hex}><b>JOUEUR 1 (OUEST)</b></color>   —   Déplacement : <b>WASD / ZQSD</b>   |   Dash : <b>ESPACE</b>\n" +
-                $"<color=#{p2Hex}><b>JOUEUR 2 (EST)</b></color>     —   Déplacement : <b>FLÈCHES</b>       |   Dash : <b>SHIFT DROIT</b>\n\n" +
-                $"<size=88%><color=#CBD5E1>• <b>OBJECTIF (100 PTS) :</b> Capturez les <b>3 Zones Mouvantes</b> pour contaminer l'arène\n" +
-                $"  avec votre réalité chromatique e régénérer votre Santé / Vie.\n" +
-                $"• <b>SURVIE :</b> Évitez les <b>4 Gardiens</b>, utilisez les <b>Portes Dynamiques</b> pour leur couper\n" +
-                $"  la route e récupérez les <b>Totems de Soin</b> (+40 HP).</color></size>\n\n" +
-                $"<size=80%><color=#94A3B8><b>[P]</b> Changer de Palette en direct      <b>[ESC]</b> Pause</color></size>";
+                $"<size=120%><b><color=#F8FAFC>COMMANDES & RÈGLES DU JEU</color></b></size>\n\n" +
+                $"<color=#{p1Hex}><b>JOUEUR 1</b></color>  :  <b>ZQSD / WASD</b>   |   Dash : <b>ESPACE</b>\n" +
+                $"<color=#{p2Hex}><b>JOUEUR 2</b></color>  :  <b>FLÈCHES</b>       |   Dash : <b>SHIFT DROIT / ENTRÉE</b>\n\n" +
+                $"<size=90%><color=#CBD5E1>• <b>OBJECTIF :</b> Atteindre <b>100 points</b> en contrôlant les 3 zones mobiles.\n" +
+                $"• <b>SUMO :</b> Utilisez le Dash pour expulser l'adversaire hors des zones.\n" +
+                $"• <b>SURVIE :</b> Hors des zones, l'entropie vide votre vie. Esquivez les Gardiens !</color></size>\n\n" +
+                $"<size=80%><color=#94A3B8><b>[ESC]</b> Pause / Menu      <b>[R]</b> Recommencer</color></size>";
         }
     }
 

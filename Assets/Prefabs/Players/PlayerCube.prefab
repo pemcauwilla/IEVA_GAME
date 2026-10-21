@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 4736968646822311691}
   - component: {fileID: -7748750946262839395}
   - component: {fileID: 5846365230637591055}
+  - component: {fileID: 4208269769948004120}
+  - component: {fileID: 1244735678775330011}
   m_Layer: 0
   m_Name: PlayerCube
   m_TagString: Untagged
@@ -162,8 +164,8 @@ MonoBehaviour:
   Acceleration: 60
   MaxSpeed: 8
   DashKey: 1
-  DashImpulse: 8
-  DashCooldown: 3
+  DashImpulse: 14
+  DashCooldown: 1.8
 --- !u!114 &-7748750946262839395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,3 +196,40 @@ MonoBehaviour:
   decayInterval: 2
   healRate: 20
   healInterval: 2
+--- !u!114 &4208269769948004120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6594863957593710159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27ae0e50a20092576aec9bcca44697e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVisuals
+  playerIdentity: {fileID: 0}
+  playerRenderer: {fileID: 0}
+  playerLight: {fileID: 0}
+  playerTrail: {fileID: 0}
+  themeController: {fileID: 0}
+  hdrBoost: 2.1
+  lightIntensity: 5.5
+  emissionColorAttenuation: 0.45
+  trailHdrBoost: 1.8
+--- !u!114 &1244735678775330011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6594863957593710159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095316a39a79eaf4a8310bc3e8dcf151, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBump
+  bumpImpulse: 14
+  minimumImpactSpeed: 1
+  bumpCooldown: 0.5
+  impactCamera: {fileID: 0}

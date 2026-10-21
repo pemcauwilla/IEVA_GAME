@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5582977071746974353}
   - component: {fileID: 6504782172099080740}
   - component: {fileID: 7917581779836584970}
+  - component: {fileID: 1717196722611690964}
   m_Layer: 0
   m_Name: CaptureZone
   m_TagString: Untagged
@@ -127,4 +128,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c8427f85b355dc728e74400867f376d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CaptureZone
-  captureTime: 5
+  captureTime: 2.8
+--- !u!114 &1717196722611690964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3074513221420261885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8ca8cc0e65ddd13d85e713319c8986f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ZoneVisuals
+  captureZone: {fileID: 0}
+  zoneRenderer: {fileID: 0}
+  zoneLight: {fileID: 0}
+  themeController: {fileID: 0}
+  baseHdrBoost: 1.2
+  baseLightIntensity: 5
+  emissionColorAttenuation: 0.45
+  capturingPulseSpeed: 1.5
+  capturingPulseAmplitude: 0.45
+  capturedPulseSpeed: 2.2
+  capturedPulseAmplitude: 0.18
+  contestedClashSpeed: 7
+  contestedPulseBoost: 0.6

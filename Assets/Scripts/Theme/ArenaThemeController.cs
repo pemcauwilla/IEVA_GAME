@@ -85,12 +85,6 @@ public class ArenaThemeController : MonoBehaviour
         {
             StepContaminationLerp();
         }
-
-        if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
-        {
-            int nextIdx = (activePaletteIndex + 1) % palettes.Length;
-            ApplyPalette(nextIdx);
-        }
     }
 
     private void OnDisable()
