@@ -28,6 +28,7 @@ public class GuardianManager : MonoBehaviour
     [SerializeField] private float repathInterval = 0.08f;
     [Tooltip("Time in seconds the guardian keeps chasing towards last seen position after losing line of sight")]
     [SerializeField] private float chaseLostInterval = 0.8f;
+    [SerializeField] private float recoilDuration = 0.16f;
 
     public GuardianState CurrentState => currentState;
 
@@ -42,6 +43,7 @@ public class GuardianManager : MonoBehaviour
     private float stunTimer = 0f;
     private float repathTimer = 0f;
     private float chaseLostTimer = 0f;
+    private Vector3 recoilDirection;
 
     #region UnityLifecycle
 
@@ -110,6 +112,10 @@ public class GuardianManager : MonoBehaviour
                 break;
 
             case GuardianState.Stunned:
+                if (stunTimer < recoilDuration)
+                {
+                    motor.StepRecoil(recoilDirection);
+                }
                 if(UpdateTimer(ref stunTimer, ref stunnedInterval)) { newState = sensor.HasTarget ? GuardianState.Chasing : GuardianState.Patrolling; }
                 break;
         }
@@ -170,6 +176,8 @@ public class GuardianManager : MonoBehaviour
                 Vector3 knockDir = (player.transform.position - transform.position).normalized;
                 rb.AddForce(knockDir * knockbackForce, ForceMode.Impulse);
             }
+            recoilDirection = (transform.position - player.transform.position).normalized;
+            recoilDirection.y = 0f;
             currentState = GuardianState.Stunned;
             OnGuardianHitPlayer?.Invoke(player.transform.position);
             OnStateChanged();

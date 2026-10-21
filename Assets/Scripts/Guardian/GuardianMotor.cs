@@ -13,6 +13,7 @@ public class GuardianMotor : MonoBehaviour
     [SerializeField] private float angularSpeed = 720f;
     [Tooltip("Minimum distance so the agent can change its target")]
     [SerializeField] private float closeDistance = 0.3f;
+    [SerializeField] private float recoilSpeed = 14f;
 
     [Header("Waypoints")]
     [Tooltip("The location of the points the agent chases around")]
@@ -70,6 +71,12 @@ public class GuardianMotor : MonoBehaviour
     }
 
     public void FaceTarget(Vector3 targetPosition) => transform.LookAt(new Vector3(targetPosition.x, transform.position.y, targetPosition.z));
+
+    public void StepRecoil(Vector3 direction)
+    {
+        if (navAgent == null || !navAgent.isOnNavMesh) return;
+        navAgent.Move(direction * (recoilSpeed * Time.deltaTime));
+    }
 
     #endregion
 }
